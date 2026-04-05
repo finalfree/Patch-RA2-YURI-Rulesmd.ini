@@ -1,51 +1,8 @@
+"""
+INI 文件差异比较和补丁生成工具
+"""
 import configparser
-import io
-
-
-def clean_ini_file(file_path):
-    """
-    清理 .ini 文件中的不规范行,包括:
-    1. 以 '//' 开头的行(非标准注释格式)
-    2. 以 ':' 开头的行(非标准键值对或注释格式)
-    3. 不包含 '=' 符号的非空行(非键值对)
-
-    Args:
-        file_path (str): 待清理的 .ini 文件的路径。
-
-    Returns:
-        io.StringIO: 包含清理后内容的内存文件对象,可以直接传递给 configparser。
-    """
-    cleaned_lines = []
-    with open(file_path, 'r', encoding='utf-8') as f:
-        for line_num, line in enumerate(f, 1):
-            stripped_line = line.strip()
-
-            # 忽略空行
-            if not stripped_line:
-                cleaned_lines.append(line)
-                continue
-
-            # 1. 检查以 '//' 开头的行
-            if stripped_line.startswith('//'):
-                continue
-
-            # 2. 检查以 ':' 开头的行
-            if stripped_line.startswith(':'):
-                continue
-
-            # 3. 检查不包含 '=' 符号的非空行 (排除标准注释 # 或 ;)
-            if '=' not in stripped_line and \
-                    not stripped_line.startswith('#') and \
-                    not stripped_line.startswith(';'):
-                # 进一步检查,如果行是合法的 [section] 头,则保留
-                if not (stripped_line.startswith('[') and stripped_line.endswith(']')):
-                    continue
-
-            # 如果以上检查都通过,则保留该行
-            cleaned_lines.append(line)
-
-    # 将清理后的内容放入一个内存文件对象中,方便 configparser 读取
-    return io.StringIO("".join(cleaned_lines))
+from common import clean_ini_file, create_config_parser
 
 
 def compare_and_generate_patch(original_file, modified_file, patch_file):
@@ -64,17 +21,14 @@ def compare_and_generate_patch(original_file, modified_file, patch_file):
     cleaned_modified = clean_ini_file(modified_file)
 
     # 加载两个配置文件
-    config_original = configparser.ConfigParser(interpolation=None, strict=False, delimiters=('=',))
-    config_original.optionxform = str
+    config_original = create_config_parser()
     config_original.read_file(cleaned_original)
 
-    config_modified = configparser.ConfigParser(interpolation=None, strict=False, delimiters=('=',))
-    config_modified.optionxform = str
+    config_modified = create_config_parser()
     config_modified.read_file(cleaned_modified)
 
     # 创建补丁配置对象
-    config_patch = configparser.ConfigParser(interpolation=None, strict=False, delimiters=('=',))
-    config_patch.optionxform = str
+    config_patch = create_config_parser()
 
     diff_count = 0
     added_sections = 0
