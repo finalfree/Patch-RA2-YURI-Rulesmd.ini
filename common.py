@@ -21,8 +21,23 @@ def clean_ini_file(file_path):
         io.StringIO: 包含清理后内容的内存文件对象，可以直接传递给 configparser。
     """
     cleaned_lines = []
-    with open(file_path, 'r', encoding='utf-8') as f:
-        for line_num, line in enumerate(f, 1):
+    # 尝试多种编码方式读取文件
+    encodings = ['utf-8', 'latin-1', 'cp1252', 'gbk']
+    content = None
+    
+    for encoding in encodings:
+        try:
+            with open(file_path, 'r', encoding=encoding) as f:
+                content = f.readlines()
+            print(f"成功使用 {encoding} 编码读取文件")
+            break
+        except (UnicodeDecodeError, UnicodeError):
+            continue
+    
+    if content is None:
+        raise UnicodeDecodeError(f"无法使用以下编码读取文件: {encodings}")
+    
+    for line_num, line in enumerate(content, 1):
             stripped_line = line.strip()
 
             # 忽略空行
@@ -103,11 +118,26 @@ def apply_patch(main_config_file, patch_config_file, backup=True):
         config.read_file(cleaned_main_file_obj)
 
         # 步骤 4: 读取并合并补丁文件
-        config.read(patch_config_file, encoding='utf-8')
+        # 尝试多种编码方式读取补丁文件
+        patch_encodings = ['utf-8', 'latin-1', 'cp1252', 'gbk']
+        patch_read_success = False
+        for encoding in patch_encodings:
+            try:
+                config.read(patch_config_file, encoding=encoding)
+                print(f"成功使用 {encoding} 编码读取补丁文件")
+                patch_read_success = True
+                break
+            except (UnicodeDecodeError, UnicodeError):
+                continue
+        
+        if not patch_read_success:
+            raise UnicodeDecodeError(f"无法使用以下编码读取补丁文件: {patch_encodings}")
+        
         print(f"文件 '{patch_config_file}' 已成功合并。")
 
         # 步骤 5: 将合并后的配置写入回原始主文件
-        with open(main_config_file, 'w', encoding='utf-8') as configfile:
+        # 使用 latin-1 编码以保持与原始 RA2 文件格式兼容
+        with open(main_config_file, 'w', encoding='latin-1') as configfile:
             config.write(configfile)
 
         print(f"合并后的配置已成功写入到 '{main_config_file}'")
