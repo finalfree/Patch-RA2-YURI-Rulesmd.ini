@@ -4,7 +4,7 @@
 from common import apply_patch
 
 # 定义主配置文件和补丁文件的路径
-MAIN_CONFIG_FILE = "E:/Games/RA2MD/rulesmd.ini"
+MAIN_CONFIG_FILE = "E:/Games/YURI/rulesmd.ini"
 PATCH_CONFIG_FILE = "patch_rulesmd.ini"
 
 if __name__ == "__main__":
