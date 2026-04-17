@@ -89,8 +89,8 @@ def compare_and_generate_patch(original_file, modified_file, patch_file):
 
 if __name__ == "__main__":
     # 定义文件路径
-    ORIGINAL_FILE = "rules.ini"
-    MODIFIED_FILE = "rules_myadd.ini"
+    ORIGINAL_FILE = "example_ini/rules.ini"
+    MODIFIED_FILE = "example_ini/rules_myadd.ini"
     PATCH_OUTPUT = "patch_rules.ini"
 
     print("开始比较 INI 文件并生成补丁...")
