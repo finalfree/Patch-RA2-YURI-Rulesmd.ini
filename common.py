@@ -137,8 +137,16 @@ def apply_patch(main_config_file, patch_config_file, backup=True):
 
         # 步骤 5: 将合并后的配置写入回原始主文件
         # 使用 latin-1 编码以保持与原始 RA2 文件格式兼容
-        with open(main_config_file, 'w', encoding='latin-1') as configfile:
-            config.write(configfile)
+        # 但如果内容包含非 latin-1 字符，则使用 utf-8 编码
+        try:
+            with open(main_config_file, 'w', encoding='latin-1') as configfile:
+                config.write(configfile)
+            print(f"使用 latin-1 编码写入文件")
+        except UnicodeEncodeError:
+            # 如果 latin-1 无法编码某些字符，使用 utf-8
+            with open(main_config_file, 'w', encoding='utf-8') as configfile:
+                config.write(configfile)
+            print(f"警告: 检测到非 latin-1 字符，使用 utf-8 编码写入文件")
 
         print(f"合并后的配置已成功写入到 '{main_config_file}'")
         return True
